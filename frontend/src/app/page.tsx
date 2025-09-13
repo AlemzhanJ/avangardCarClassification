@@ -353,24 +353,40 @@ export default function Home() {
 
         {/* Upload Section (image replaces drop area) */}
         <div className="max-w-2xl mx-auto mb-4">
-          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
+          <div className={`${selectedImage ? 'border border-gray-200 dark:border-gray-700' : 'border-2 border-dashed border-gray-300 dark:border-gray-600'} rounded-lg overflow-hidden relative`}>
             <input
               type="file"
               accept="image/*"
               onChange={handleImageUpload}
               className="hidden"
               id="image-upload"
+              disabled={selectedImage !== null}
             />
-            <label htmlFor="image-upload" className="block cursor-pointer">
+            <label htmlFor={selectedImage ? undefined : "image-upload"} className={`block ${selectedImage ? '' : 'cursor-pointer'}`}>
               {selectedImage ? (
-                <Image
-                  src={selectedImage}
-                  alt="Selected"
-                  className="w-full h-auto"
-                  width={1200}
-                  height={800}
-                  unoptimized
-                />
+                <div className="relative">
+                  <Image
+                    src={selectedImage}
+                    alt="Selected"
+                    className="w-full h-auto"
+                    width={1200}
+                    height={800}
+                    unoptimized
+                  />
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setSelectedImage(null);
+                      setIntegrityResult(null);
+                    }}
+                    className="absolute top-3 right-3 w-8 h-8 bg-indrive-green hover:bg-indrive-green-dark rounded-full flex items-center justify-center shadow-lg transition-colors z-10"
+                    title="Remove image"
+                  >
+                    <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
               ) : (
                 <div className="p-8 text-center hover:border-indrive-green transition-colors">
                   <div className="mb-4">
