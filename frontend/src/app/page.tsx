@@ -328,9 +328,9 @@ export default function Home() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
         {/* Hero Section */}
-        <div className="text-center mb-12 py-16">
+        <div className="text-center mb-6 py-8">
           <h1 className="text-4xl sm:text-5xl font-black mb-6 tracking-tight text-foreground">
             <span className="inline-block">
               {t.heroJoinA}{' '}
@@ -357,7 +357,7 @@ export default function Home() {
         </div>
 
         {/* Upload Section (image replaces drop area) */}
-        <div className="max-w-2xl mx-auto mb-6">
+        <div className="max-w-2xl mx-auto mb-4">
           <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
             <input
               type="file"
