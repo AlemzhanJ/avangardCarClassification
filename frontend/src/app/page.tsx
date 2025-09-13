@@ -3,12 +3,19 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Logo from '../components/Logo';
+import { inferSeverity } from "../lib/severity";
+import { ShieldWarning, ChartLine, Thermometer, Tag, Car, ChartBarHorizontal, Sparkle } from '@phosphor-icons/react';
 
 interface ClassificationResult {
   label: string;
   probability: number;
   severity: 'Low' | 'Medium' | 'High';
   severityPercentage: number;
+  details?: {
+    predicted_class: string;
+    damage_type: string;
+    probabilities: Record<string, number>;
+  };
 }
 
 // Language translations
@@ -48,7 +55,12 @@ const translations = {
     undamaged: 'Undamaged',
     low: 'Low',
     medium: 'Medium',
-    high: 'High'
+    high: 'High',
+    predictedClass: 'Predicted class',
+    damageType: 'Damage type',
+    classProbabilities: 'Class probabilities',
+    damageScratch: 'Scratch',
+    damageDent: 'Dent'
   },
   Ru: {
     carClassificationSystem: 'Система классификации автомобилей',
@@ -85,7 +97,12 @@ const translations = {
     undamaged: 'Не повреждён',
     low: 'Низкий',
     medium: 'Средний',
-    high: 'Высокий'
+    high: 'Высокий',
+    predictedClass: 'Предсказанный класс',
+    damageType: 'Тип повреждения',
+    classProbabilities: 'Вероятности классов',
+    damageScratch: 'Царапина',
+    damageDent: 'Вмятина'
   },
   Kz: {
     carClassificationSystem: 'Автомобиль жіктеу жүйесі',
@@ -122,15 +139,19 @@ const translations = {
     undamaged: 'Зақымданбаған',
     low: 'Төмен',
     medium: 'Орта',
-    high: 'Жоғары'
+    high: 'Жоғары',
+    predictedClass: 'Болжанған класс',
+    damageType: 'Зақым түрі',
+    classProbabilities: 'Сынып ықтималдықтары',
+    damageScratch: 'Scratch',
+    damageDent: 'Dent'
   }
 };
 
 export default function Home() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [hideNumbers, setHideNumbers] = useState(false);
-  const [cleanlinessResult, setCleanlinessResult] = useState<ClassificationResult | null>(null);
+  // Cleanliness is not used currently; simplified UI without this state
   const [integrityResult, setIntegrityResult] = useState<ClassificationResult | null>(null);
   const [currentLanguage, setCurrentLanguage] = useState<'En' | 'Ru' | 'Kz'>('En');
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
@@ -163,7 +184,7 @@ export default function Home() {
       const reader = new FileReader();
       reader.onload = (e) => {
         setSelectedImage(e.target?.result as string);
-        setCleanlinessResult(null);
+        // reset integrity result on new image
         setIntegrityResult(null);
       };
       reader.readAsDataURL(file);
@@ -172,28 +193,39 @@ export default function Home() {
 
   const processImage = async () => {
     if (!selectedImage) return;
-    
     setIsProcessing(true);
-    
-    // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Mock results for demonstration
-    setCleanlinessResult({
-      label: t.clean,
-      probability: 0.85,
-      severity: 'Low',
-      severityPercentage: 15
-    });
-    
-    setIntegrityResult({
-      label: t.damaged,
-      probability: 0.72,
-      severity: 'Medium',
-      severityPercentage: 65
-    });
-    
-    setIsProcessing(false);
+
+    try {
+      // Run severity model for damage assessment
+      const sev = await inferSeverity(selectedImage);
+
+      // Map severity label
+      const severityMap: Record<string, 'Low' | 'Medium' | 'High'> = {
+        low: 'Low',
+        med: 'Medium',
+        high: 'High'
+      };
+
+      setIntegrityResult({
+        label: t.damaged,
+        probability: sev.confidence,
+        severity: severityMap[sev.severity] ?? 'Medium',
+        severityPercentage: Math.round(sev.confidence * 100),
+        details: {
+          predicted_class: sev.predicted_class,
+          damage_type: sev.damage_type,
+          probabilities: sev.probabilities,
+        },
+      });
+
+      // Cleanliness flow is not implemented yet
+    } catch (err) {
+      console.error('Severity inference failed', err);
+      // fallback UI
+      setIntegrityResult(null);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const getSeverityColor = (severity: string) => {
@@ -213,6 +245,29 @@ export default function Home() {
       default: return severity;
     }
   };
+
+  const getDamageTypeText = (type: string) => {
+    if (type === 'scratch') return t.damageScratch || 'Scratch';
+    if (type === 'dent') return t.damageDent || 'Dent';
+    return type;
+  };
+
+  // Map model class key like "scratch_high" -> localized human text, e.g. "Царапина — Высокий"
+  const formatClassLabel = (key: string) => {
+    const parts = key.split('_');
+    if (parts.length !== 2) return key;
+    const [type, sev] = parts as [string, 'low' | 'med' | 'high'];
+    const sevMap: Record<string, 'Low' | 'Medium' | 'High'> = { low: 'Low', med: 'Medium', high: 'High' };
+    return `${getDamageTypeText(type)} — ${getSeverityText(sevMap[sev] ?? 'Medium')}`;
+  };
+
+  // Icons from Phosphor (refined choices)
+  const IconStatus = () => (<ShieldWarning size={16} weight="bold" />);
+  const IconConfidence = () => (<ChartLine size={16} weight="bold" />);
+  const IconSeverity = () => (<Thermometer size={16} weight="bold" />);
+  const IconPredicted = () => (<Tag size={16} weight="bold" />);
+  const IconDamage = () => (<Car size={16} weight="bold" />);
+  const IconProbs = () => (<ChartBarHorizontal size={16} weight="bold" />);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -301,9 +356,9 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Upload Section */}
-        <div className="max-w-2xl mx-auto mb-8">
-          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center hover:border-indrive-green transition-colors">
+        {/* Upload Section (image replaces drop area) */}
+        <div className="max-w-2xl mx-auto mb-6">
+          <div className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden">
             <input
               type="file"
               accept="image/*"
@@ -311,144 +366,98 @@ export default function Home() {
               className="hidden"
               id="image-upload"
             />
-            <label htmlFor="image-upload" className="cursor-pointer">
-              <div className="mb-4">
-                <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                </svg>
-              </div>
-              <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
-                {t.clickToUpload}
-              </p>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                {t.fileTypes}
-              </p>
+            <label htmlFor="image-upload" className="block cursor-pointer">
+              {selectedImage ? (
+                <Image
+                  src={selectedImage}
+                  alt="Selected"
+                  className="w-full h-auto"
+                  width={1200}
+                  height={800}
+                  unoptimized
+                />
+              ) : (
+                <div className="p-8 text-center hover:border-indrive-green transition-colors">
+                  <div className="mb-4">
+                    <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                  </div>
+                  <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    {t.clickToUpload}
+                  </p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    {t.fileTypes}
+                  </p>
+                </div>
+              )}
             </label>
           </div>
         </div>
 
-        {/* Controls */}
+        {/* Analyze button */}
         {selectedImage && (
-          <div className="max-w-2xl mx-auto mb-8 flex flex-col sm:flex-row gap-4 items-center justify-center">
-            <label className="flex items-center space-x-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={hideNumbers}
-                onChange={(e) => setHideNumbers(e.target.checked)}
-                className="rounded border-gray-300 text-indrive-green focus:ring-indrive-green"
-              />
-              <span className="text-sm font-medium">{t.hideLicensePlates}</span>
-            </label>
+          <div className="max-w-2xl mx-auto mb-6 flex items-center justify-center">
             <button
               onClick={processImage}
               disabled={isProcessing}
-              className="bg-indrive-green hover:bg-indrive-green-dark text-black font-medium px-6 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="bg-indrive-green hover:bg-indrive-green-dark text-black font-medium px-6 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
             >
+              <Sparkle size={16} weight="bold" />
               {isProcessing ? t.processing : t.analyzeImage}
             </button>
           </div>
         )}
 
-        {/* Image Preview and Results */}
-        {selectedImage && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-            {/* Image Preview */}
-            <div className="bg-card-background border border-card-border rounded-lg p-6">
-              <h3 className="text-lg font-bold mb-4">{t.imagePreview}</h3>
-              <div className="relative">
-                <Image
-                  src={selectedImage}
-                  alt="Car preview"
-                  className="w-full h-auto rounded-lg"
-                  style={hideNumbers ? { filter: 'blur(2px)' } : {}}
-                  width={500}
-                  height={300}
-                  unoptimized
-                />
-                {hideNumbers && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="bg-black bg-opacity-50 text-white px-3 py-1 rounded">
-                      {t.licensePlatesHidden}
-                    </span>
-                  </div>
-                )}
+        {/* Results (compact, no cards) */}
+        {selectedImage && integrityResult && (
+          <div className="max-w-2xl mx-auto space-y-4 mb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex items-center justify-between gap-3 p-3 border border-card-border rounded-md bg-card-background">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300"><IconStatus /> <span className="font-medium">{t.status}</span></div>
+                <div className="font-semibold text-red-600 dark:text-red-400">{integrityResult.label}</div>
+              </div>
+              <div className="flex items-center justify-between gap-3 p-3 border border-card-border rounded-md bg-card-background">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300"><IconConfidence /> <span className="font-medium">{t.confidence}</span></div>
+                <div className="font-semibold">{(integrityResult.probability * 100).toFixed(1)}%</div>
+              </div>
+              <div className="flex items-center justify-between gap-3 p-3 border border-card-border rounded-md bg-card-background sm:col-span-2">
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300"><IconSeverity /> <span className="font-medium">{t.damageLevel}</span></div>
+                <div className={`font-semibold ${getSeverityColor(integrityResult.severity)}`}>{getSeverityText(integrityResult.severity)} ({integrityResult.severityPercentage}%)</div>
               </div>
             </div>
 
-            {/* Results */}
-            <div className="space-y-6">
-              {/* Cleanliness Card */}
-              <div className="bg-card-background border border-card-border rounded-lg p-6">
-                <h3 className="text-lg font-bold mb-4 flex items-center">
-                  <div className="w-3 h-3 bg-blue-500 rounded-full mr-3"></div>
-                  {t.cleanlinessAnalysis}
-                </h3>
-                {cleanlinessResult ? (
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">{t.status}</span>
-                      <span className={`font-semibold ${cleanlinessResult.label === t.clean ? 'text-green-600 dark:text-green-400' : 'text-orange-600 dark:text-orange-400'}`}>
-                        {cleanlinessResult.label}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">{t.confidence}</span>
-                      <span className="font-semibold">{(cleanlinessResult.probability * 100).toFixed(1)}%</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">{t.dirtLevel}</span>
-                      <span className={`font-semibold ${getSeverityColor(cleanlinessResult.severity)}`}>
-                        {getSeverityText(cleanlinessResult.severity)} ({cleanlinessResult.severityPercentage}%)
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div 
-                        className="bg-indrive-green h-2 rounded-full transition-all duration-500"
-                        style={{ width: `${cleanlinessResult.probability * 100}%` }}
-                      ></div>
-                    </div>
+            {integrityResult.details && (
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="flex items-center justify-between gap-3 p-3 border border-card-border rounded-md bg-card-background">
+                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300"><IconPredicted /> <span className="font-medium">{t.predictedClass}</span></div>
+                    <div className="font-semibold text-right">{formatClassLabel(integrityResult.details.predicted_class)}</div>
                   </div>
-                ) : (
-                  <p className="text-gray-500 dark:text-gray-400">{t.uploadAnalyzeMessage}</p>
-                )}
-              </div>
+                  <div className="flex items-center justify-between gap-3 p-3 border border-card-border rounded-md bg-card-background">
+                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300"><IconDamage /> <span className="font-medium">{t.damageType}</span></div>
+                    <div className="font-semibold">{getDamageTypeText(integrityResult.details.damage_type)}</div>
+                  </div>
+                </div>
 
-              {/* Integrity Card */}
-              <div className="bg-card-background border border-card-border rounded-lg p-6">
-                <h3 className="text-lg font-bold mb-4 flex items-center">
-                  <div className="w-3 h-3 bg-purple-500 rounded-full mr-3"></div>
-                  {t.integrityAnalysis}
-                </h3>
-                {integrityResult ? (
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">Status:</span>
-                      <span className={`font-semibold ${integrityResult.label === 'Undamaged' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                        {integrityResult.label}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">{t.confidence}</span>
-                      <span className="font-semibold">{(integrityResult.probability * 100).toFixed(1)}%</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">Damage Level:</span>
-                      <span className={`font-semibold ${getSeverityColor(integrityResult.severity)}`}>
-                        {integrityResult.severity} ({integrityResult.severityPercentage}%)
-                      </span>
-                    </div>
-                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                      <div 
-                        className="bg-indrive-green h-2 rounded-full transition-all duration-500"
-                        style={{ width: `${integrityResult.probability * 100}%` }}
-                      ></div>
-                    </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-2 text-gray-700 dark:text-gray-300"><IconProbs /> <span className="font-medium">{t.classProbabilities}</span></div>
+                  <div className="space-y-2">
+                    {Object.entries(integrityResult.details.probabilities)
+                      .sort((a, b) => b[1] - a[1])
+                      .map(([label, p]) => (
+                        <div key={label} className="flex items-center gap-3">
+                          <div className="w-44 text-xs text-gray-600 dark:text-gray-400 truncate">{formatClassLabel(label)}</div>
+                          <div className="flex-1 bg-gray-200 dark:bg-gray-700 h-2 rounded-full">
+                            <div className="bg-indrive-green h-2 rounded-full" style={{ width: `${(p * 100).toFixed(1)}%` }}></div>
+                          </div>
+                          <div className="w-12 text-xs text-right">{(p * 100).toFixed(1)}%</div>
+                        </div>
+                      ))}
                   </div>
-                ) : (
-                  <p className="text-gray-500 dark:text-gray-400">{t.uploadAnalyzeMessage}</p>
-                )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         )}
 
