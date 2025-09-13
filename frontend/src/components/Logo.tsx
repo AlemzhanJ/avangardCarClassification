@@ -27,7 +27,7 @@ export default function Logo({ className = '', width = 120, height = 40 }: LogoP
 
   return (
     <Image
-      src={isDark ? "/logo-dark.svg" : "/logo.svg"}
+      src={isDark ? "/logo.svg" : "/logo-dark.svg"}
       alt="inDrive Logo"
       width={width}
       height={height}
