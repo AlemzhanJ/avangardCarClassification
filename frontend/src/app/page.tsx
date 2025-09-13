@@ -267,7 +267,7 @@ export default function Home() {
   const IconSeverity = () => null;
   const IconPredicted = () => null;
   const IconDamage = () => null;
-  const IconProbs = () => null;
+  const IconProbs = ChartBarHorizontal;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
