@@ -30,10 +30,12 @@ const CLASS_NAMES = [
 
 async function getSession() {
   if (!sessionPromise) {
-    // Ensure WASM assets load from CDN unless self-hosted
-    // To self-host, copy onnxruntime-web/dist/* to /public/ort/ and set wasm.wasmPaths = "/ort/"
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (ort as any).env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.0/dist/";
+    // Configure runtime to avoid threaded build (no COOP/COEP required on Vercel)
+    const env = (ort as unknown as { env: { wasm: { numThreads?: number; simd?: boolean; wasmPaths?: string } } }).env;
+    env.wasm.numThreads = 1;
+    env.wasm.simd = true;
+    // If needed to self-host, uncomment:
+    // env.wasm.wasmPaths = "/ort/";
     sessionPromise = ort.InferenceSession.create(MODEL_URL, {
       executionProviders: ["wasm"],
     });
