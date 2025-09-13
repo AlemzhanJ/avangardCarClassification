@@ -23,6 +23,7 @@ const translations = {
   En: {
     carClassificationSystem: 'Car Classification System',
     aiCarConditionAnalysis: 'AI Car Condition Analysis',
+    footerText: '© 2025 Avangard Car Classification',
     heroJoinA: 'Join a',
     heroSmartJourney: 'smart journey',
     heroWhereAI: 'Where AI analyzes',
@@ -47,8 +48,8 @@ const translations = {
     damageAssessment: 'Damage Assessment',
     damageDescription: 'Detect scratches, dents, and other damage with detailed severity analysis',
     privacyProtection: 'Privacy Protection',
-    privacyDescription: 'Optional license plate blurring to protect privacy during analysis',
-    footerText: '© 2024 inDrive Car Classification System. Advanced AI for automotive assessment.',
+    privacyDescription: 'Data is not sent or stored anywhere.',
+    footerText: '© 2025 inDrive Car Classification System. Advanced AI for automotive assessment.',
     clean: 'Clean',
     dirty: 'Dirty',
     damaged: 'Damaged',
@@ -90,7 +91,7 @@ const translations = {
     damageDescription: 'Обнаружение царапин, вмятин и других повреждений с детальным анализом серьезности',
     privacyProtection: 'Защита конфиденциальности',
     privacyDescription: 'Опциональное размытие номерных знаков для защиты конфиденциальности во время анализа',
-    footerText: '© 2024 inDrive Система классификации автомобилей. Передовой ИИ для автомобильной оценки.',
+    footerText: '© 2025 inDrive Система классификации автомобилей. Передовой ИИ для автомобильной оценки.',
     clean: 'Чистый',
     dirty: 'Грязный',
     damaged: 'Повреждён',
@@ -132,7 +133,7 @@ const translations = {
     damageDescription: 'Сызаттар, ойықтар және басқа зақымданулар мен толық қатаңдық талдауын анықтау',
     privacyProtection: 'Құпиялылықты қорғау',
     privacyDescription: 'Талдау кезінде құпиялылықты қорғау үшін нөмірлік белгілерді қосымша бұлдырлау',
-    footerText: '© 2024 inDrive Автомобиль жіктеу жүйесі. Автомобиль бағалауы үшін озық ЖИ.',
+    footerText: '© 2025 inDrive Автомобиль жіктеу жүйесі. Автомобиль бағалауы үшін озық ЖИ.',
     clean: 'Таза',
     dirty: 'Лас',
     damaged: 'Зақымданған',
@@ -517,8 +518,9 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-card-border bg-card-background mt-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="text-center text-gray-600 dark:text-gray-400">
-            <p>{t.footerText}</p>
+          <div className="flex flex-col items-center justify-center gap-2">
+            <Logo width={120} height={40} />
+            <p className="text-gray-600 dark:text-gray-400 text-sm">{t.footerText}</p>
           </div>
         </div>
       </footer>
