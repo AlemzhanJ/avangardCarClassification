@@ -9,3 +9,15 @@ dirty-classifier/
 dirty-classifier/**/.onnx filter=lfs diff=lfs merge=lfs -text
 dirty-
 [[:space:]][[:space:]]classifier/**/.onnx filter=lfs diff=lfs merge=lfs -text
+
+# Large ML artifacts tracked with Git LFS (keep frontend as-is)
+severity-classifier/outputs/** filter=lfs diff=lfs merge=lfs -text
+severity-classifier/**/*.pt filter=lfs diff=lfs merge=lfs -text
+severity-classifier/**/*.onnx filter=lfs diff=lfs merge=lfs -text
+severity-classifier/outputs filter=lfs diff=lfs merge=lfs -text
+severity-classifier//.pt filter=lfs diff=lfs merge=lfs -text
+severity-classifier/
+[[:space:]][[:space:]]**/.onnx filter=lfs diff=lfs merge=lfs -text
+severity-classifier/**/.onnx filter=lfs diff=lfs merge=lfs -text
+severity-
+[[:space:]][[:space:]]classifier/**/.onnx filter=lfs diff=lfs merge=lfs -text

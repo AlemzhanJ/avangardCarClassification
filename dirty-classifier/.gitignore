@@ -1,14 +1,4 @@
 /__pycache__
 
-# Training outputs and large artifacts
-/outputs/
-/outputs/**/*
 
-# Model checkpoints (PyTorch)
-**/*.pt
-
-# ONNX exports within dirty-classifier (frontend is separate)
-**/*.onnx
-
-# Virtual env cache
 /venv/

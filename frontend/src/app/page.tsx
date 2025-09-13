@@ -14,11 +14,6 @@ interface ClassificationResult {
   probability: number;
   severity: 'Low' | 'Medium' | 'High';
   severityPercentage: number;
-  details?: {
-    predicted_class: string;
-    damage_type: string;
-    probabilities: Record<string, number>;
-  };
 }
 
 interface CleanlinessResult {
@@ -255,24 +250,13 @@ export default function Home() {
       // Ensure the liquid animation reaches the bottom
       await delay;
 
-      // Map severity label
-      const severityMap: Record<string, 'Low' | 'Medium' | 'High'> = {
-        low: 'Low',
-        med: 'Medium',
-        high: 'High'
-      };
-
       if (sev) {
+        const damageProb = sev.label === 'damaged' ? sev.confidence : 1 - sev.confidence;
         setIntegrityResult({
-          label: t.damaged,
-          probability: sev.confidence,
-          severity: severityMap[sev.severity] ?? 'Medium',
-          severityPercentage: Math.round(sev.confidence * 100),
-          details: {
-            predicted_class: sev.predicted_class,
-            damage_type: sev.damage_type,
-            probabilities: sev.probabilities,
-          },
+          label: sev.label === 'damaged' ? t.damaged : t.undamaged,
+          probability: damageProb,
+          severity: 'Medium',
+          severityPercentage: Math.round(damageProb * 100),
         });
       } else {
         setIntegrityResult(null);
