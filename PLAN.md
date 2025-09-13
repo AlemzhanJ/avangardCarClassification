@@ -19,19 +19,6 @@
 * UI-карточка: принимает `label`, `prob` (0–1), `severity` (Low/Medium/High + %).
 * Этика: блюрим номера в канвасе **до** инференса (общий компонент `ImageCanvas`).
 
-# Структура репо
-
-```
-/data_raw/  /data_proc/
- /src/
-   train_clean.py  train_damage.py
-   common/data.py  common/augs.py  common/utils.py
-   export_onnx.py  eval.py
- /demo/
-   src/App.tsx  src/components/ImageCanvas.tsx  src/lib/infer.ts
-   public/models/*.onnx  public/config/severity.json
- /reports/  /notebooks/  README.md  requirements.txt  package.json
-```
 
 # Таймлайн 36 ч (Asia/Almaty)
 
