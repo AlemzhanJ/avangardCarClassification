@@ -1,12 +1,21 @@
 import type { NextConfig } from "next";
 
+// Migrate from deprecated experimental.turbo to config.turbopack (Next 15+)
 const nextConfig: NextConfig = {
-  // Ensure stable webpack build on Vercel to avoid Turbopack bundling issues
-  experimental: {
-    turbo: {
-      // Disable Turbopack for production builds
-      resolveAlias: {},
-    },
+  turbopack: {
+    // Keep explicit object to mirror previous config; adjust if needed
+    resolveAlias: {},
+  },
+  async headers() {
+    return [
+      {
+        source: "/ort/:path*\.wasm",
+        headers: [
+          { key: "Content-Type", value: "application/wasm" },
+          { key: "Cross-Origin-Resource-Policy", value: "same-origin" },
+        ],
+      },
+    ];
   },
 };
 

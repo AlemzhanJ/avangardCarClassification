@@ -4,8 +4,10 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Logo from '../components/Logo';
 import { inferSeverity } from "../lib/severity";
+import { inferCleanliness } from "../lib/cleanliness";
 import ShimmerSkeletonOverlay from "../components/ShimmerSkeletonOverlay";
-import { ChartBarHorizontal, Sparkle, Spinner } from '@phosphor-icons/react';
+import { ChartBarHorizontal, Sparkle, Spinner, Smiley, SmileyMeh, SmileySad, ArrowCounterClockwise } from '@phosphor-icons/react';
+import GaugeRadial from "../components/GaugeRadial";
 
 interface ClassificationResult {
   label: string;
@@ -17,6 +19,11 @@ interface ClassificationResult {
     damage_type: string;
     probabilities: Record<string, number>;
   };
+}
+
+interface CleanlinessResult {
+  label: 'Clean' | 'Dirty';
+  probability: number;
 }
 
 // Language translations
@@ -39,6 +46,8 @@ const translations = {
     licensePlatesHidden: 'License plates hidden',
     cleanlinessAnalysis: 'Cleanliness Analysis',
     integrityAnalysis: 'Integrity Analysis',
+    cleanlinessTitle: 'Cleanliness',
+    damageTitle: 'Damage',
     status: 'Status:',
     confidence: 'Confidence:',
     dirtLevel: 'Dirt Level:',
@@ -62,6 +71,8 @@ const translations = {
     classProbabilities: 'Class probabilities',
     damageScratch: 'Scratch',
     damageDent: 'Dent'
+    ,
+    tryAgain: 'Try Again'
   },
   Ru: {
     carClassificationSystem: 'Система классификации автомобилей',
@@ -80,6 +91,8 @@ const translations = {
     licensePlatesHidden: 'Номерные знаки скрыты',
     cleanlinessAnalysis: 'Анализ чистоты',
     integrityAnalysis: 'Анализ целостности',
+    cleanlinessTitle: 'Чистота',
+    damageTitle: 'Повреждения',
     status: 'Статус:',
     confidence: 'Уверенность:',
     dirtLevel: 'Уровень загрязнения:',
@@ -104,6 +117,8 @@ const translations = {
     classProbabilities: 'Вероятности классов',
     damageScratch: 'Царапина',
     damageDent: 'Вмятина'
+    ,
+    tryAgain: 'Попробовать ещё раз'
   },
   Kz: {
     carClassificationSystem: 'Автомобиль жіктеу жүйесі',
@@ -122,6 +137,8 @@ const translations = {
     licensePlatesHidden: 'Нөмірлік белгілер жасырылған',
     cleanlinessAnalysis: 'Тазалық талдауы',
     integrityAnalysis: 'Тұтастық талдауы',
+    cleanlinessTitle: 'Тазалық',
+    damageTitle: 'Зақымдану',
     status: 'Күйі:',
     confidence: 'Сенімділік:',
     dirtLevel: 'Ластану деңгейі:',
@@ -146,14 +163,18 @@ const translations = {
     classProbabilities: 'Сынып ықтималдықтары',
     damageScratch: 'Scratch',
     damageDent: 'Dent'
+    ,
+    tryAgain: 'Қайтадан талдау'
   }
 };
 
 export default function Home() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  // Cleanliness is not used currently; simplified UI without this state
+  // Cleanliness first stage result
+  const [cleanlinessResult, setCleanlinessResult] = useState<CleanlinessResult | null>(null);
   const [integrityResult, setIntegrityResult] = useState<ClassificationResult | null>(null);
+  const [analysisDone, setAnalysisDone] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState<'En' | 'Ru' | 'Kz'>('En');
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
 
@@ -185,8 +206,10 @@ export default function Home() {
       const reader = new FileReader();
       reader.onload = (e) => {
         setSelectedImage(e.target?.result as string);
-        // reset integrity result on new image
+        // reset results on new image
+        setCleanlinessResult(null);
         setIntegrityResult(null);
+        setAnalysisDone(false);
       };
       reader.readAsDataURL(file);
     }
@@ -200,9 +223,26 @@ export default function Home() {
     const delay = new Promise((resolve) => setTimeout(resolve, MIN_FLOW_MS));
 
     try {
-      // Start model inference and visual flow in parallel
+      // First stage: cleanliness
+      const cleanPromise = inferCleanliness(selectedImage);
+      // Start damage model in parallel, but we will await after cleanliness for UX ordering
       const sevPromise = inferSeverity(selectedImage);
+      let clean: Awaited<ReturnType<typeof inferCleanliness>> | null = null;
       let sev: Awaited<ReturnType<typeof inferSeverity>> | null = null;
+      try {
+        clean = await cleanPromise;
+      } catch (e) {
+        console.error('Cleanliness inference failed', e);
+        clean = null;
+      }
+      // Show cleanliness immediately when ready
+      if (clean) {
+        setCleanlinessResult({
+          label: clean.label === 'dirty' ? 'Dirty' : 'Clean',
+          probability: clean.confidence,
+        });
+      }
+      // Continue with severity
       try {
         sev = await sevPromise;
       } catch (e) {
@@ -235,7 +275,8 @@ export default function Home() {
         setIntegrityResult(null);
       }
 
-      // Cleanliness flow is not implemented yet
+      // Mark flow complete (UI switches to results-only view)
+      setAnalysisDone(true);
     } catch (err) {
       console.error('Processing flow failed', err);
     } finally {
@@ -367,6 +408,7 @@ export default function Home() {
         </div>
 
         {/* Upload Section (image replaces drop area) */}
+        {!analysisDone && (
         <div className="max-w-2xl mx-auto mb-4">
           <div className={`${selectedImage ? 'border border-gray-200 dark:border-gray-700' : 'border-2 border-dashed border-gray-300 dark:border-gray-600'} rounded-lg overflow-hidden relative`}>
             <input
@@ -422,9 +464,10 @@ export default function Home() {
             </label>
           </div>
         </div>
+        )}
 
         {/* Analyze button */}
-        {selectedImage && (
+        {!analysisDone && selectedImage && (
           <div className="max-w-2xl mx-auto mb-6 flex items-center justify-center">
             <button
               onClick={processImage}
@@ -442,54 +485,36 @@ export default function Home() {
         )}
 
         {/* Results (compact, no cards) */}
-        {selectedImage && integrityResult && (
-          <div className="max-w-2xl mx-auto space-y-4 mb-10">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="flex items-center justify-between gap-3 p-3 border border-card-border rounded-md bg-card-background">
-                <div className="text-gray-600 dark:text-gray-300 font-medium">{t.status}</div>
-                <div className="font-semibold text-red-600 dark:text-red-400">{integrityResult.label}</div>
-              </div>
-              <div className="flex items-center justify-between gap-3 p-3 border border-card-border rounded-md bg-card-background">
-                <div className="text-gray-600 dark:text-gray-300 font-medium">{t.confidence}</div>
-                <div className="font-semibold">{(integrityResult.probability * 100).toFixed(1)}%</div>
-              </div>
-              <div className="flex items-center justify-between gap-3 p-3 border border-card-border rounded-md bg-card-background sm:col-span-2">
-                <div className="text-gray-600 dark:text-gray-300 font-medium">{t.damageLevel}</div>
-                <div className={`font-semibold ${getSeverityColor(integrityResult.severity)}`}>{getSeverityText(integrityResult.severity)} ({integrityResult.severityPercentage}%)</div>
-              </div>
+        {analysisDone && (
+          <div className="max-w-3xl mx-auto space-y-6 mb-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Damage gauge */}
+              {integrityResult && (
+                <GaugeRadial
+                  label={t.damageTitle}
+                  value={(integrityResult.severityPercentage || 0) / 100}
+                  riskScale
+                  Icon={integrityResult.severity === 'High' ? SmileySad : integrityResult.severity === 'Medium' ? SmileyMeh : Smiley}
+                />
+              )}
+              {/* Cleanliness gauge */}
+              {cleanlinessResult && (
+                <GaugeRadial
+                  label={t.cleanlinessTitle}
+                  value={cleanlinessResult.probability}
+                  riskScale={false}
+                  Icon={(cleanlinessResult.label === 'Dirty') ? (cleanlinessResult.probability > 0.66 ? SmileySad : SmileyMeh) : Smiley}
+                />
+              )}
             </div>
-
-            {integrityResult.details && (
-              <div className="space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="flex items-center justify-between gap-3 p-3 border border-card-border rounded-md bg-card-background">
-                    <div className="text-gray-600 dark:text-gray-300 font-medium">{t.predictedClass}</div>
-                    <div className="font-semibold text-right">{formatClassLabel(integrityResult.details.predicted_class)}</div>
-                  </div>
-                  <div className="flex items-center justify-between gap-3 p-3 border border-card-border rounded-md bg-card-background">
-                    <div className="text-gray-600 dark:text-gray-300 font-medium">{t.damageType}</div>
-                    <div className="font-semibold">{getDamageTypeText(integrityResult.details.damage_type)}</div>
-                  </div>
-                </div>
-
-                <div>
-                  <div className="flex items-center gap-2 mb-2 text-gray-700 dark:text-gray-300"><IconProbs /> <span className="font-medium">{t.classProbabilities}</span></div>
-                  <div className="space-y-2">
-                    {Object.entries(integrityResult.details.probabilities)
-                      .sort((a, b) => b[1] - a[1])
-                      .map(([label, p]) => (
-                        <div key={label} className="flex items-center gap-3">
-                          <div className="w-44 text-xs text-gray-600 dark:text-gray-400 truncate">{formatClassLabel(label)}</div>
-                          <div className="flex-1 bg-gray-200 dark:bg-gray-700 h-2 rounded-full">
-                            <div className="bg-indrive-green h-2 rounded-full" style={{ width: `${(p * 100).toFixed(1)}%` }}></div>
-                          </div>
-                          <div className="w-12 text-xs text-right">{(p * 100).toFixed(1)}%</div>
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              </div>
-            )}
+            <div className="flex items-center justify-center mt-20">
+              <button
+                onClick={() => { setSelectedImage(null); setCleanlinessResult(null); setIntegrityResult(null); setAnalysisDone(false); }}
+                className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-indrive-green text-black font-semibold hover:brightness-110 transition"
+              >
+                <ArrowCounterClockwise size={18} weight="bold" /> {t.tryAgain}
+              </button>
+            </div>
           </div>
         )}
 

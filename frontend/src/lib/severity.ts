@@ -34,8 +34,8 @@ async function getSession() {
     const env = (ort as unknown as { env: { wasm: { numThreads?: number; simd?: boolean; wasmPaths?: string } } }).env;
     env.wasm.numThreads = 1;
     env.wasm.simd = true;
-    // If needed to self-host, uncomment:
-    // env.wasm.wasmPaths = "/ort/";
+    // Self-host WASM files to ensure correct MIME type
+    env.wasm.wasmPaths = "/ort/";
     sessionPromise = ort.InferenceSession.create(MODEL_URL, {
       executionProviders: ["wasm"],
     });
