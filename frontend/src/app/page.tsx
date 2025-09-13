@@ -262,12 +262,12 @@ export default function Home() {
   };
 
   // Icons from Phosphor (refined choices)
-  const IconStatus = () => (<ShieldWarning size={16} weight="bold" />);
-  const IconConfidence = () => (<ChartLine size={16} weight="bold" />);
-  const IconSeverity = () => (<Thermometer size={16} weight="bold" />);
-  const IconPredicted = () => (<Tag size={16} weight="bold" />);
-  const IconDamage = () => (<Car size={16} weight="bold" />);
-  const IconProbs = () => (<ChartBarHorizontal size={16} weight="bold" />);
+  const IconStatus = () => null;
+  const IconConfidence = () => null;
+  const IconSeverity = () => null;
+  const IconPredicted = () => null;
+  const IconDamage = () => null;
+  const IconProbs = () => null;
 
   return (
     <div className="min-h-screen bg-background text-foreground">
