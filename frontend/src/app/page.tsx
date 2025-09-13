@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Logo from '../components/Logo';
 import { inferSeverity } from "../lib/severity";
-import { ShieldWarning, ChartLine, Thermometer, Tag, Car, ChartBarHorizontal, Sparkle } from '@phosphor-icons/react';
+import { ChartBarHorizontal, Sparkle } from '@phosphor-icons/react';
 
 interface ClassificationResult {
   label: string;
@@ -261,13 +261,8 @@ export default function Home() {
     return `${getDamageTypeText(type)} — ${getSeverityText(sevMap[sev] ?? 'Medium')}`;
   };
 
-  // Icons from Phosphor (refined choices)
-  const IconStatus = () => null;
-  const IconConfidence = () => null;
-  const IconSeverity = () => null;
-  const IconPredicted = () => null;
-  const IconDamage = () => null;
-  const IconProbs = ChartBarHorizontal;
+  // Only keep icon for probabilities as requested
+  const IconProbs = () => (<ChartBarHorizontal size={18} weight="bold" />);
 
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -414,15 +409,15 @@ export default function Home() {
           <div className="max-w-2xl mx-auto space-y-4 mb-10">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="flex items-center justify-between gap-3 p-3 border border-card-border rounded-md bg-card-background">
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300"><IconStatus /> <span className="font-medium">{t.status}</span></div>
+                <div className="text-gray-600 dark:text-gray-300 font-medium">{t.status}</div>
                 <div className="font-semibold text-red-600 dark:text-red-400">{integrityResult.label}</div>
               </div>
               <div className="flex items-center justify-between gap-3 p-3 border border-card-border rounded-md bg-card-background">
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300"><IconConfidence /> <span className="font-medium">{t.confidence}</span></div>
+                <div className="text-gray-600 dark:text-gray-300 font-medium">{t.confidence}</div>
                 <div className="font-semibold">{(integrityResult.probability * 100).toFixed(1)}%</div>
               </div>
               <div className="flex items-center justify-between gap-3 p-3 border border-card-border rounded-md bg-card-background sm:col-span-2">
-                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300"><IconSeverity /> <span className="font-medium">{t.damageLevel}</span></div>
+                <div className="text-gray-600 dark:text-gray-300 font-medium">{t.damageLevel}</div>
                 <div className={`font-semibold ${getSeverityColor(integrityResult.severity)}`}>{getSeverityText(integrityResult.severity)} ({integrityResult.severityPercentage}%)</div>
               </div>
             </div>
@@ -431,11 +426,11 @@ export default function Home() {
               <div className="space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div className="flex items-center justify-between gap-3 p-3 border border-card-border rounded-md bg-card-background">
-                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300"><IconPredicted /> <span className="font-medium">{t.predictedClass}</span></div>
+                    <div className="text-gray-600 dark:text-gray-300 font-medium">{t.predictedClass}</div>
                     <div className="font-semibold text-right">{formatClassLabel(integrityResult.details.predicted_class)}</div>
                   </div>
                   <div className="flex items-center justify-between gap-3 p-3 border border-card-border rounded-md bg-card-background">
-                    <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300"><IconDamage /> <span className="font-medium">{t.damageType}</span></div>
+                    <div className="text-gray-600 dark:text-gray-300 font-medium">{t.damageType}</div>
                     <div className="font-semibold">{getDamageTypeText(integrityResult.details.damage_type)}</div>
                   </div>
                 </div>
