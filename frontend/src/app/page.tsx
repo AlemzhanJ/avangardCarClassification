@@ -263,9 +263,22 @@ export default function Home() {
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
-        <div className="text-center mb-12">
-          <h1 className="text-5xl font-black mb-6 tracking-tight">
-            {t.aiCarConditionAnalysis}
+        <div className="text-center mb-12 py-16">
+          <h1 className="text-5xl font-black mb-6 tracking-tight text-foreground">
+            <span className="inline-block">
+              Join a{' '}
+              <span className="bg-indrive-green text-black px-2 py-1 transform -rotate-1 inline-block font-black">
+                smart journey
+              </span>
+            </span>
+            <br />
+            <span className="text-foreground">
+              Where AI analyzes
+            </span>
+            <br />
+            <span className="text-foreground">
+              car conditions
+            </span>
           </h1>
           <p className="text-xl font-medium text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
             {t.uploadDescription}
