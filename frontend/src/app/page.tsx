@@ -47,6 +47,7 @@ const translations = {
     cleanlinessAnalysis: 'Cleanliness Analysis',
     integrityAnalysis: 'Integrity Analysis',
     cleanlinessTitle: 'Cleanliness',
+    dirtTitle: 'Dirt Level',
     damageTitle: 'Damage',
     status: 'Status:',
     confidence: 'Confidence:',
@@ -92,6 +93,7 @@ const translations = {
     cleanlinessAnalysis: 'Анализ чистоты',
     integrityAnalysis: 'Анализ целостности',
     cleanlinessTitle: 'Чистота',
+    dirtTitle: 'Загрязнение',
     damageTitle: 'Повреждения',
     status: 'Статус:',
     confidence: 'Уверенность:',
@@ -138,6 +140,7 @@ const translations = {
     cleanlinessAnalysis: 'Тазалық талдауы',
     integrityAnalysis: 'Тұтастық талдауы',
     cleanlinessTitle: 'Тазалық',
+    dirtTitle: 'Ластану деңгейі',
     damageTitle: 'Зақымдану',
     status: 'Күйі:',
     confidence: 'Сенімділік:',
@@ -482,26 +485,26 @@ export default function Home() {
                   }
                 />
               )}
-              {/* Cleanliness gauge */}
+              {/* Dirt level gauge */}
               {cleanlinessResult && (
                 <GaugeRadial
-                  label={t.cleanlinessTitle}
-                  value={cleanlinessResult.probability}
-                  riskScale={false}
+                  label={t.dirtTitle}
+                  value={cleanlinessResult.label === 'Dirty' ? cleanlinessResult.probability : 1 - cleanlinessResult.probability}
+                  riskScale={true}
                   Icon={
-                    cleanlinessResult.probability > 0.66 ? Smiley :
-                    cleanlinessResult.probability > 0.33 ? SmileyMeh :
-                    SmileySad
+                    (cleanlinessResult.label === 'Dirty' ? cleanlinessResult.probability : 1 - cleanlinessResult.probability) > 0.66 ? SmileySad :
+                    (cleanlinessResult.label === 'Dirty' ? cleanlinessResult.probability : 1 - cleanlinessResult.probability) > 0.33 ? SmileyMeh :
+                    Smiley
                   }
                 />
               )}
             </div>
             <div className="flex items-center justify-center mt-20">
               <button
-                onClick={() => { 
-                  setSelectedImage(null); 
-                  setCleanlinessResult(null); 
-                  setIntegrityResult(null); 
+                onClick={() => {
+                  setSelectedImage(null);
+                  setCleanlinessResult(null);
+                  setIntegrityResult(null);
                   setAnalysisDone(false);
                   setIsProcessing(false);
                 }}
