@@ -490,8 +490,15 @@ export default function Home() {
             </div>
             <div className="flex items-center justify-center mt-20">
               <button
-                onClick={() => { setSelectedImage(null); setCleanlinessResult(null); setIntegrityResult(null); setAnalysisDone(false); }}
-                className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-indrive-green text-black font-semibold hover:brightness-110 transition"
+                onClick={() => { 
+                  setSelectedImage(null); 
+                  setCleanlinessResult(null); 
+                  setIntegrityResult(null); 
+                  setAnalysisDone(false);
+                  setIsProcessing(false);
+                }}
+                className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-indrive-green text-black font-semibold hover:brightness-110 transition cursor-pointer z-10 relative"
+                style={{ pointerEvents: 'auto' }}
               >
                 <ArrowCounterClockwise size={18} weight="bold" /> {t.tryAgain}
               </button>
