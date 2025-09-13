@@ -36,3 +36,42 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+/* White shimmer skeleton overlay */
+.skeleton-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+  isolation: isolate;
+}
+
+.skeleton-base {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, var(--skeleton-base-opacity, 0.68));
+  backdrop-filter: saturate(1.05) brightness(1.02);
+}
+
+.skeleton-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255,255,255,0) 0%,
+    rgba(255,255,255,0.35) 35%,
+    rgba(255,255,255,0.75) 50%,
+    rgba(255,255,255,0.35) 65%,
+    rgba(255,255,255,0) 100%
+  );
+  transform: translateX(-120%);
+  filter: blur(10px);
+  will-change: transform;
+  animation: skeleton-shimmer var(--shimmer-duration, 1400ms) ease-in-out infinite;
+}
+
+@keyframes skeleton-shimmer {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(120%); }
+}
