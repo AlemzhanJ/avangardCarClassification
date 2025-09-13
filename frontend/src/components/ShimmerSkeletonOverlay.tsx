@@ -22,9 +22,7 @@ export default function ShimmerSkeletonOverlay({ active, durationMs = 1400, base
     <div
       className="skeleton-overlay"
       style={{
-        // @ts-expect-error setting CSS custom properties
         "--shimmer-duration": `${durationMs}ms`,
-        // @ts-expect-error setting CSS custom properties
         "--skeleton-base-opacity": baseOpacity,
       } as React.CSSProperties}
     >
