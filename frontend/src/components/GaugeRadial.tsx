@@ -19,6 +19,10 @@ export default function GaugeRadial({ label, value, riskScale = true, Icon, clas
     ? v > 0.66 ? "#ef4444" : v > 0.33 ? "#f59e0b" : "#22c55e"
     : v > 0.66 ? "#22c55e" : v > 0.33 ? "#f59e0b" : "#ef4444";
 
+  const iconColorClass = riskScale
+    ? (v > 0.66 ? 'text-red-500' : v > 0.33 ? 'text-yellow-400' : 'text-green-500')
+    : (v > 0.66 ? 'text-green-500' : v > 0.33 ? 'text-yellow-400' : 'text-red-500');
+
   return (
     <div className={`p-4 rounded-xl bg-card-background flex flex-col items-center ${className}`}>
       <div className="text-3xl sm:text-4xl font-black text-foreground mb-6">{label}</div>
@@ -40,11 +44,7 @@ export default function GaugeRadial({ label, value, riskScale = true, Icon, clas
               <Icon
                 size={96}
                 weight="bold"
-                className={
-                  riskScale
-                    ? (v > 0.66 ? 'text-red-500' : v > 0.33 ? 'text-yellow-400' : 'text-green-500')
-                    : (v > 0.66 ? 'text-green-500' : v > 0.33 ? 'text-yellow-400' : 'text-red-500')
-                }
+                className={iconColorClass}
               />
             </div>
           </CircularProgressbarWithChildren>

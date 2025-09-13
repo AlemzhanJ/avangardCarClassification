@@ -475,7 +475,11 @@ export default function Home() {
                   label={t.damageTitle}
                   value={(integrityResult.severityPercentage || 0) / 100}
                   riskScale
-                  Icon={integrityResult.severity === 'High' ? SmileySad : integrityResult.severity === 'Medium' ? SmileyMeh : Smiley}
+                  Icon={
+                    (integrityResult.severityPercentage || 0) / 100 > 0.66 ? SmileySad :
+                    (integrityResult.severityPercentage || 0) / 100 > 0.33 ? SmileyMeh :
+                    Smiley
+                  }
                 />
               )}
               {/* Cleanliness gauge */}
@@ -484,7 +488,11 @@ export default function Home() {
                   label={t.cleanlinessTitle}
                   value={cleanlinessResult.probability}
                   riskScale={false}
-                  Icon={cleanlinessResult.label === 'Clean' ? Smiley : (cleanlinessResult.probability > 0.66 ? SmileySad : SmileyMeh)}
+                  Icon={
+                    cleanlinessResult.probability > 0.66 ? Smiley :
+                    cleanlinessResult.probability > 0.33 ? SmileyMeh :
+                    SmileySad
+                  }
                 />
               )}
             </div>
