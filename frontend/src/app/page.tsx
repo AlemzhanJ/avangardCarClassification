@@ -6,7 +6,7 @@ import Logo from '../components/Logo';
 import { inferSeverity } from "../lib/severity";
 import { inferCleanliness } from "../lib/cleanliness";
 import ShimmerSkeletonOverlay from "../components/ShimmerSkeletonOverlay";
-import { ChartBarHorizontal, Sparkle, Spinner, Smiley, SmileyMeh, SmileySad, ArrowCounterClockwise } from '@phosphor-icons/react';
+import { Sparkle, Spinner, Smiley, SmileyMeh, SmileySad, ArrowCounterClockwise } from '@phosphor-icons/react';
 import GaugeRadial from "../components/GaugeRadial";
 
 interface ClassificationResult {
@@ -284,15 +284,6 @@ export default function Home() {
     }
   };
 
-  const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'Low': return 'text-green-600 dark:text-green-400';
-      case 'Medium': return 'text-yellow-600 dark:text-yellow-400';
-      case 'High': return 'text-red-600 dark:text-red-400';
-      default: return 'text-gray-600 dark:text-gray-400';
-    }
-  };
-
   const getSeverityText = (severity: string) => {
     switch (severity) {
       case 'Low': return t.low;
@@ -308,17 +299,7 @@ export default function Home() {
     return type;
   };
 
-  // Map model class key like "scratch_high" -> localized human text, e.g. "Царапина — Высокий"
-  const formatClassLabel = (key: string) => {
-    const parts = key.split('_');
-    if (parts.length !== 2) return key;
-    const [type, sev] = parts as [string, 'low' | 'med' | 'high'];
-    const sevMap: Record<string, 'Low' | 'Medium' | 'High'> = { low: 'Low', med: 'Medium', high: 'High' };
-    return `${getDamageTypeText(type)} — ${getSeverityText(sevMap[sev] ?? 'Medium')}`;
-  };
-
-  // Only keep icon for probabilities as requested
-  const IconProbs = () => (<ChartBarHorizontal size={18} weight="bold" />);
+  // helper kept for potential future text mapping
 
   return (
     <div className="min-h-screen bg-background text-foreground">

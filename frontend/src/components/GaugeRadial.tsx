@@ -9,7 +9,7 @@ type Props = {
   value: number; // 0..1
   // If true: low (0) -> green, high (1) -> red
   riskScale?: boolean;
-  Icon: React.ComponentType<{ size?: number; weight?: any; className?: string }>;
+  Icon: React.ComponentType<{ size?: number; weight?: "thin"|"light"|"regular"|"bold"|"fill"|"duotone"; className?: string }>;
   className?: string;
 };
 
