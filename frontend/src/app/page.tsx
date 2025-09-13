@@ -16,6 +16,10 @@ const translations = {
   En: {
     carClassificationSystem: 'Car Classification System',
     aiCarConditionAnalysis: 'AI Car Condition Analysis',
+    heroJoinA: 'Join a',
+    heroSmartJourney: 'smart journey',
+    heroWhereAI: 'Where AI analyzes',
+    heroCarConditions: 'car conditions',
     uploadDescription: 'Upload a car image to analyze cleanliness and damage conditions using advanced machine learning models',
     clickToUpload: 'Click to upload car image',
     fileTypes: 'PNG, JPG up to 10MB',
@@ -49,6 +53,10 @@ const translations = {
   Ru: {
     carClassificationSystem: 'Система классификации автомобилей',
     aiCarConditionAnalysis: 'ИИ Анализ состояния автомобиля',
+    heroJoinA: 'Присоединяйтесь к',
+    heroSmartJourney: 'умному путешествию',
+    heroWhereAI: 'Где ИИ анализирует',
+    heroCarConditions: 'состояние автомобилей',
     uploadDescription: 'Загрузите изображение автомобиля для анализа чистоты и повреждений с помощью передовых моделей машинного обучения',
     clickToUpload: 'Нажмите для загрузки изображения авто',
     fileTypes: 'PNG, JPG до 10МБ',
@@ -82,6 +90,10 @@ const translations = {
   Kz: {
     carClassificationSystem: 'Автомобиль жіктеу жүйесі',
     aiCarConditionAnalysis: 'ЖИ Автомобиль жай-күйін талдау',
+    heroJoinA: 'Қосылыңыз',
+    heroSmartJourney: 'ақылды саяхатқа',
+    heroWhereAI: 'Мұнда ЖИ талдайды',
+    heroCarConditions: 'автомобиль жай-күйін',
     uploadDescription: 'Озық машиналық оқыту модельдерін пайдалана отырып, тазалық пен зақымдануды талдау үшін автомобиль суретін жүктеңіз',
     clickToUpload: 'Автомобиль суретін жүктеу үшін басыңыз',
     fileTypes: 'PNG, JPG 10МБ дейін',
@@ -264,20 +276,24 @@ export default function Home() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
         <div className="text-center mb-12 py-16">
-          <h1 className="text-5xl font-black mb-6 tracking-tight text-foreground">
+          <h1 className="text-4xl sm:text-5xl font-black mb-6 tracking-tight text-foreground">
             <span className="inline-block">
-              Join a{' '}
-              <span className="bg-indrive-green text-black px-2 py-1 transform -rotate-1 inline-block font-black">
-                smart journey
+              {t.heroJoinA}{' '}
+              <span className="relative inline-block font-black">
+                <span className="absolute inset-0 bg-indrive-green transform -rotate-1 translate-x-1 translate-y-0.5 px-2 py-1"></span>
+                <span className="absolute inset-0 bg-indrive-green transform rotate-0.5 -translate-x-0.5 translate-y-1 px-2 py-1"></span>
+                <span className="relative z-10 text-black px-2 py-1">
+                  {t.heroSmartJourney}
+                </span>
               </span>
             </span>
             <br />
             <span className="text-foreground">
-              Where AI analyzes
+              {t.heroWhereAI}
             </span>
             <br />
             <span className="text-foreground">
-              car conditions
+              {t.heroCarConditions}
             </span>
           </h1>
           <p className="text-xl font-medium text-gray-600 dark:text-gray-300 max-w-3xl mx-auto leading-relaxed">
