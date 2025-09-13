@@ -484,7 +484,7 @@ export default function Home() {
                   label={t.cleanlinessTitle}
                   value={cleanlinessResult.probability}
                   riskScale={false}
-                  Icon={(cleanlinessResult.label === 'Dirty') ? (cleanlinessResult.probability > 0.66 ? SmileySad : SmileyMeh) : Smiley}
+                  Icon={cleanlinessResult.label === 'Clean' ? Smiley : (cleanlinessResult.probability > 0.66 ? SmileySad : SmileyMeh)}
                 />
               )}
             </div>
