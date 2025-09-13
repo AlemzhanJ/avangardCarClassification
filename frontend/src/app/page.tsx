@@ -49,7 +49,6 @@ const translations = {
     damageDescription: 'Detect scratches, dents, and other damage with detailed severity analysis',
     privacyProtection: 'Privacy Protection',
     privacyDescription: 'Data is not sent or stored anywhere.',
-    footerText: '© 2025 inDrive Car Classification System. Advanced AI for automotive assessment.',
     clean: 'Clean',
     dirty: 'Dirty',
     damaged: 'Damaged',
