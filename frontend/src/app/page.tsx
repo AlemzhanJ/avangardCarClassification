@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Logo from '../components/Logo';
 import { inferSeverity } from "../lib/severity";
+import ShimmerSkeletonOverlay from "../components/ShimmerSkeletonOverlay";
 import { ChartBarHorizontal, Sparkle, Spinner } from '@phosphor-icons/react';
 
 interface ClassificationResult {
@@ -195,9 +196,21 @@ export default function Home() {
     if (!selectedImage) return;
     setIsProcessing(true);
 
+    const MIN_FLOW_MS = 1400; // show skeleton shimmer at least one sweep
+    const delay = new Promise((resolve) => setTimeout(resolve, MIN_FLOW_MS));
+
     try {
-      // Run severity model for damage assessment
-      const sev = await inferSeverity(selectedImage);
+      // Start model inference and visual flow in parallel
+      const sevPromise = inferSeverity(selectedImage);
+      let sev: Awaited<ReturnType<typeof inferSeverity>> | null = null;
+      try {
+        sev = await sevPromise;
+      } catch (e) {
+        console.error('Severity inference failed', e);
+        sev = null;
+      }
+      // Ensure the liquid animation reaches the bottom
+      await delay;
 
       // Map severity label
       const severityMap: Record<string, 'Low' | 'Medium' | 'High'> = {
@@ -206,23 +219,25 @@ export default function Home() {
         high: 'High'
       };
 
-      setIntegrityResult({
-        label: t.damaged,
-        probability: sev.confidence,
-        severity: severityMap[sev.severity] ?? 'Medium',
-        severityPercentage: Math.round(sev.confidence * 100),
-        details: {
-          predicted_class: sev.predicted_class,
-          damage_type: sev.damage_type,
-          probabilities: sev.probabilities,
-        },
-      });
+      if (sev) {
+        setIntegrityResult({
+          label: t.damaged,
+          probability: sev.confidence,
+          severity: severityMap[sev.severity] ?? 'Medium',
+          severityPercentage: Math.round(sev.confidence * 100),
+          details: {
+            predicted_class: sev.predicted_class,
+            damage_type: sev.damage_type,
+            probabilities: sev.probabilities,
+          },
+        });
+      } else {
+        setIntegrityResult(null);
+      }
 
       // Cleanliness flow is not implemented yet
     } catch (err) {
-      console.error('Severity inference failed', err);
-      // fallback UI
-      setIntegrityResult(null);
+      console.error('Processing flow failed', err);
     } finally {
       setIsProcessing(false);
     }
@@ -373,6 +388,8 @@ export default function Home() {
                     height={800}
                     unoptimized
                   />
+                  {/* White skeleton shimmer overlay while processing */}
+                  <ShimmerSkeletonOverlay active={isProcessing} durationMs={1400} />
                   <button
                     onClick={(e) => {
                       e.preventDefault();
