@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Logo from '../components/Logo';
 import { inferSeverity } from "../lib/severity";
-import { ChartBarHorizontal, Sparkle } from '@phosphor-icons/react';
+import { ChartBarHorizontal, Sparkle, Spinner } from '@phosphor-icons/react';
 
 interface ClassificationResult {
   label: string;
@@ -414,8 +414,12 @@ export default function Home() {
               disabled={isProcessing}
               className="bg-indrive-green hover:bg-indrive-green-dark text-black font-medium px-6 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center gap-2"
             >
-              <Sparkle size={16} weight="bold" />
-              {isProcessing ? t.processing : t.analyzeImage}
+              {isProcessing ? (
+                <Spinner size={16} weight="bold" className="animate-spin" />
+              ) : (
+                <Sparkle size={16} weight="bold" />
+              )}
+              {isProcessing ? t.processing.replace('...', '') : t.analyzeImage}
             </button>
           </div>
         )}
