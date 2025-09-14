@@ -52,8 +52,8 @@ async function getLabels(): Promise<Record<number, string>> {
   return labelsPromise;
 }
 
-// Letterbox resize to square, record scale and padding to map back boxes
-async function letterbox(imageSrc: string, imgSize: number) {
+// Direct resize (stretch) full image to square imgSize x imgSize
+async function resizeToSquare(imageSrc: string, imgSize: number) {
   const img = await new Promise<HTMLImageElement>((resolve, reject) => {
     const i = new Image();
     i.onload = () => resolve(i);
@@ -63,23 +63,14 @@ async function letterbox(imageSrc: string, imgSize: number) {
 
   const iw = img.naturalWidth || img.width;
   const ih = img.naturalHeight || img.height;
-  const r = Math.min(imgSize / iw, imgSize / ih);
-  const newW = Math.round(iw * r);
-  const newH = Math.round(ih * r);
-  const padW = imgSize - newW;
-  const padH = imgSize - newH;
-  const padLeft = Math.floor(padW / 2);
-  const padTop = Math.floor(padH / 2);
 
   const canvas = document.createElement("canvas");
   canvas.width = imgSize;
   canvas.height = imgSize;
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas 2D context not available");
-  // Ultralytics default letterbox fill is 114 (RGB), hex #727272
-  ctx.fillStyle = "#727272";
-  ctx.fillRect(0, 0, imgSize, imgSize);
-  ctx.drawImage(img, 0, 0, iw, ih, padLeft, padTop, newW, newH);
+  // Stretch original image to square target
+  ctx.drawImage(img, 0, 0, iw, ih, 0, 0, imgSize, imgSize);
 
   // Convert to CHW float32 [0,1]
   const { data } = ctx.getImageData(0, 0, imgSize, imgSize);
@@ -100,7 +91,10 @@ async function letterbox(imageSrc: string, imgSize: number) {
   }
 
   const tensor = new ort.Tensor("float32", floatData, [1, 3, imgSize, imgSize]);
-  return { tensor, iw, ih, r, padLeft, padTop };
+  // Scales to map back from model space (imgSize) to original image
+  const scaleX = iw / imgSize;
+  const scaleY = ih / imgSize;
+  return { tensor, iw, ih, scaleX, scaleY };
 }
 
 export async function inferYolo(imageSrc: string, opts?: { confThreshold?: number }): Promise<YoloDet[]> {
@@ -115,7 +109,7 @@ export async function inferYolo(imageSrc: string, opts?: { confThreshold?: numbe
   const dims = meta?.dimensions;
   const size = Array.isArray(dims) && typeof dims[2] === "number" ? (dims[2] as number) : DEFAULT_IMG_SIZE;
 
-  const { tensor, iw, ih, r, padLeft, padTop } = await letterbox(imageSrc, size);
+  const { tensor, iw, ih, scaleX, scaleY } = await resizeToSquare(imageSrc, size);
 
   const outputs = await session.run({ [inputName]: tensor });
   const out = outputs[outputName];
@@ -139,17 +133,11 @@ export async function inferYolo(imageSrc: string, opts?: { confThreshold?: numbe
     const clsId = arr[base + 5] | 0;
     if (!(conf > confThresh)) continue;
 
-    // Map back from letterboxed size to original image pixels
-    const unpadX1 = (x1 - padLeft) / r;
-    const unpadY1 = (y1 - padTop) / r;
-    const unpadX2 = (x2 - padLeft) / r;
-    const unpadY2 = (y2 - padTop) / r;
-
-    // Clip to image bounds
-    const bx1 = Math.max(0, Math.min(iw, unpadX1));
-    const by1 = Math.max(0, Math.min(ih, unpadY1));
-    const bx2 = Math.max(0, Math.min(iw, unpadX2));
-    const by2 = Math.max(0, Math.min(ih, unpadY2));
+    // Map back from stretched square to original image pixels
+    const bx1 = Math.max(0, Math.min(iw, x1 * scaleX));
+    const by1 = Math.max(0, Math.min(ih, y1 * scaleY));
+    const bx2 = Math.max(0, Math.min(iw, x2 * scaleX));
+    const by2 = Math.max(0, Math.min(ih, y2 * scaleY));
 
     dets.push({
       x1: bx1,
