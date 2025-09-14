@@ -156,13 +156,14 @@ python export_onnx.py
 
 #### 🔍 **Damage Assessment Engine**
 
-![Confusion Matrix - Damage Model](./severity-classifier/outputs/resnet50_384_e5/test_cm.png)
+![Confusion Matrix - Damage Model](./severity-classifier/outputs/resnet50_384_e3/test_cm.png)
+
 *Матрица ошибок демонстрирует высокую точность в классификации повреждений*
 
-![ROC Curve - Damage Model](./severity-classifier/outputs/resnet50_384_e5/test_roc.png)
+![ROC Curve - Damage Model](./severity-classifier/outputs/resnet50_384_e3/test_roc.png)
 *ROC-кривая показывает надежную классификацию различных типов повреждений*
 
-![Training Curves - Damage Model](./severity-classifier/outputs/resnet50_384_e5/curves.png)
+![Training Curves - Damage Model](./severity-classifier/outputs/resnet50_384_e3/curves.png)
 *Кривые обучения подтверждают стабильное обучение без переобучения*
 
 **🏆 Ключевые метрики:**
