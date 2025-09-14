@@ -394,19 +394,21 @@ export default function Home() {
                   />
                   {/* White skeleton shimmer overlay while processing */}
                   <ShimmerSkeletonOverlay active={isProcessing} durationMs={1400} />
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      setSelectedImage(null);
-                      setIntegrityResult(null);
-                    }}
-                    className="absolute top-0 right-0 w-8 h-8 bg-indrive-green hover:bg-indrive-green-dark rounded-full flex items-center justify-center shadow-lg transition-colors z-10"
-                    title="Remove image"
-                  >
-                    <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+                  {!analysisDone && (
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setSelectedImage(null);
+                        setIntegrityResult(null);
+                      }}
+                      className="absolute top-0 right-0 w-8 h-8 bg-indrive-green hover:bg-indrive-green-dark rounded-full flex items-center justify-center shadow-lg transition-colors z-10"
+                      title="Remove image"
+                    >
+                      <svg className="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="p-8 text-center hover:border-indrive-green transition-colors">
