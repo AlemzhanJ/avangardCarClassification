@@ -34,11 +34,14 @@ async function getLabels(): Promise<Record<number, string>> {
   if (!labelsPromise) {
     labelsPromise = fetch(LABELS_URL)
       .then(r => (r.ok ? r.json() : Promise.reject(new Error("labels not found"))))
-      .then((data) => {
+      .then((data: unknown) => {
+        const obj = (data ?? {}) as Record<string, unknown>;
         const result: Record<number, string> = {};
-        for (const k of Object.keys(data)) {
+        for (const k of Object.keys(obj)) {
           const idx = Number(k);
-          if (!Number.isNaN(idx)) result[idx] = String((data as any)[k]);
+          if (Number.isNaN(idx)) continue;
+          const value = obj[k];
+          result[idx] = typeof value === 'string' ? value : String(value);
         }
         return result;
       })

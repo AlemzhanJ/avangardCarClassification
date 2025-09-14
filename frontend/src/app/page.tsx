@@ -271,20 +271,7 @@ export default function Home() {
     }
   };
 
-  const getSeverityText = (severity: string) => {
-    switch (severity) {
-      case 'Low': return t.low;
-      case 'Medium': return t.medium;
-      case 'High': return t.high;
-      default: return severity;
-    }
-  };
-
-  const getDamageTypeText = (type: string) => {
-    if (type === 'scratch') return t.damageScratch || 'Scratch';
-    if (type === 'dent') return t.damageDent || 'Dent';
-    return type;
-  };
+  // removed unused helpers getSeverityText and getDamageTypeText
 
   // helper kept for potential future text mapping
 
