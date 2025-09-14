@@ -265,7 +265,15 @@ export default function Home() {
         setIntegrityResult({
           label: sev.label === 'damaged' ? t.damaged : t.undamaged,
           probability: damageProb,
-          severity: 'Medium',
+          let severity: 'Low' | 'Medium' | 'High' = 'Medium';
+        if (damageProb < 0.33) {
+          severity = 'Low';
+        } else if (damageProb < 0.66) {
+          severity = 'Medium';
+        } else {
+          severity = 'High';
+        }
+        severity: severity,
           severityPercentage: Math.round(damageProb * 100),
           probabilities: sev.probabilities,
         });
