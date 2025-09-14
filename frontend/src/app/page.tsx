@@ -14,11 +14,13 @@ interface ClassificationResult {
   probability: number;
   severity: 'Low' | 'Medium' | 'High';
   severityPercentage: number;
+  probabilities?: { undamaged: number; damaged: number };
 }
 
 interface CleanlinessResult {
   label: 'Clean' | 'Dirty';
   probability: number;
+  probabilities?: { clean: number; dirty: number };
 }
 
 // Language translations
@@ -238,6 +240,7 @@ export default function Home() {
         setCleanlinessResult({
           label: clean.label === 'dirty' ? 'Dirty' : 'Clean',
           probability: clean.confidence,
+          probabilities: { clean: clean.probabilities.clean, dirty: clean.probabilities.dirty },
         });
       }
       // Continue with severity
@@ -251,12 +254,13 @@ export default function Home() {
       await delay;
 
       if (sev) {
-        const damageProb = sev.label === 'damaged' ? sev.confidence : 1 - sev.confidence;
+        const damageProb = sev.probabilities?.damaged ?? (sev.label === 'damaged' ? sev.confidence : 1 - sev.confidence);
         setIntegrityResult({
           label: sev.label === 'damaged' ? t.damaged : t.undamaged,
           probability: damageProb,
           severity: 'Medium',
           severityPercentage: Math.round(damageProb * 100),
+          probabilities: sev.probabilities,
         });
       } else {
         setIntegrityResult(null);
@@ -362,8 +366,7 @@ export default function Home() {
           </p>
         </div>
 
-        {/* Upload Section (image replaces drop area) */}
-        {!analysisDone && (
+        {/* Upload Section (image preview stays visible with boxes and debug) */}
         <div className="max-w-2xl mx-auto mb-4">
           <div className={`${selectedImage ? 'border border-gray-200 dark:border-gray-700' : 'border-2 border-dashed border-gray-300 dark:border-gray-600'} rounded-lg overflow-hidden relative`}>
             <input
@@ -417,9 +420,9 @@ export default function Home() {
                 </div>
               )}
             </label>
+            
           </div>
         </div>
-        )}
 
         {/* Analyze button */}
         {!analysisDone && selectedImage && (

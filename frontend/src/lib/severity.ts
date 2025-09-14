@@ -122,13 +122,20 @@ export async function inferSeverity(imageSrc: string): Promise<SeverityPred> {
     if (v === 'damaged') damagedIdx = Number(k);
     if (v === 'undamaged') undamagedIdx = Number(k);
   }
-  if (damagedIdx < 0) damagedIdx = 0; // default to [damaged, undamaged]
-  if (undamagedIdx < 0) undamagedIdx = 1;
+  if (damagedIdx < 0 && undamagedIdx < 0) {
+    // Fallback if labels missing: assume [damaged, undamaged]
+    damagedIdx = 0; undamagedIdx = 1;
+  } else if (damagedIdx < 0 && undamagedIdx >= 0) {
+    // Only undamaged known
+    damagedIdx = undamagedIdx === 0 ? 1 : 0;
+  } else if (undamagedIdx < 0 && damagedIdx >= 0) {
+    undamagedIdx = damagedIdx === 0 ? 1 : 0;
+  }
 
   const damaged = probs[damagedIdx] ?? 0;
-  const undamaged = probs[undamagedIdx] ?? 0;
+  const undamaged = probs[undamagedIdx] ?? (1 - damaged);
   const label: "undamaged" | "damaged" = damaged >= undamaged ? "damaged" : "undamaged";
-  const confidence = Math.max(undamaged, damaged);
+  const confidence = label === 'damaged' ? damaged : undamaged;
 
   return {
     label,
