@@ -115,8 +115,7 @@ const translations = {
     damageType: 'Тип повреждения',
     classProbabilities: 'Вероятности классов',
     damageScratch: 'Царапина',
-    damageDent: 'Вмятина'
-    ,
+    damageDent: 'Вмятина',
     tryAgain: 'Попробовать ещё раз'
   },
   Kz: {
@@ -161,9 +160,8 @@ const translations = {
     predictedClass: 'Болжанған класс',
     damageType: 'Зақым түрі',
     classProbabilities: 'Сынып ықтималдықтары',
-    damageScratch: 'Scratch',
-    damageDent: 'Dent'
-    ,
+    damageScratch: 'Сызат',
+    damageDent: 'Ойық',
     tryAgain: 'Қайтадан талдау'
   }
 };
