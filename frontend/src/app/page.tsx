@@ -71,8 +71,7 @@ const translations = {
     damageScratch: 'Сызат',
     damageDent: 'Ойық',
     dirt: 'Лас',
-    dirty: 'Лас'
-    ,
+    dirty: 'Лас',
     tryAgain: 'Try Again'
   },
   Ru: {
