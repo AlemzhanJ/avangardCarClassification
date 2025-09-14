@@ -262,10 +262,7 @@ export default function Home() {
 
       if (sev) {
         const damageProb = sev.probabilities?.damaged ?? (sev.label === 'damaged' ? sev.confidence : 1 - sev.confidence);
-        setIntegrityResult({
-          label: sev.label === 'damaged' ? t.damaged : t.undamaged,
-          probability: damageProb,
-          let severity: 'Low' | 'Medium' | 'High' = 'Medium';
+        let severity: 'Low' | 'Medium' | 'High' = 'Medium';
         if (damageProb < 0.33) {
           severity = 'Low';
         } else if (damageProb < 0.66) {
@@ -273,7 +270,10 @@ export default function Home() {
         } else {
           severity = 'High';
         }
-        severity: severity,
+        setIntegrityResult({
+          label: sev.label === 'damaged' ? t.damaged : t.undamaged,
+          probability: damageProb,
+          severity: severity,
           severityPercentage: Math.round(damageProb * 100),
           probabilities: sev.probabilities,
         });
