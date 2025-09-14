@@ -52,7 +52,7 @@ class TrainConfig:
     output_dir: str
     img_size: int = 384
     batch_size: int = 16
-    epochs: int = 5
+    epochs: int = 3
     lr: float = 1e-3
     min_lr: float = 1e-6
     weight_decay: float = 1e-4
@@ -488,7 +488,7 @@ def parse_args() -> TrainConfig:
     p.add_argument('--output-dir', type=str, default='severity-classifier/outputs/resnet50_384')
     p.add_argument('--img-size', type=int, default=384)
     p.add_argument('--batch-size', type=int, default=16)
-    p.add_argument('--epochs', type=int, default=5)
+    p.add_argument('--epochs', type=int, default=3)
     p.add_argument('--lr', type=float, default=1e-3)
     p.add_argument('--min-lr', type=float, default=1e-6)
     p.add_argument('--weight-decay', type=float, default=1e-4)
