@@ -70,7 +70,6 @@ const translations = {
     classProbabilities: 'Class probabilities',
     damageScratch: 'Сызат',
     damageDent: 'Ойық',
-    dirt: 'Лас',
     dirty: 'Лас',
     tryAgain: 'Try Again'
   },
