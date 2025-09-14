@@ -3,8 +3,10 @@
 import * as ort from "onnxruntime-web";
 
 let sessionPromise: Promise<ort.InferenceSession> | null = null;
+let labelsPromise: Promise<Record<number, string>> | null = null;
 
 const MODEL_URL = "/models/severity_classifier.onnx";
+const LABELS_URL = "/models/severity_classifier.labels.json";
 const DEFAULT_IMG_SIZE = 384;
 const MEAN = [0.485, 0.456, 0.406];
 const STD = [0.229, 0.224, 0.225];
@@ -26,6 +28,23 @@ async function getSession() {
     });
   }
   return sessionPromise;
+}
+
+async function getLabels(): Promise<Record<number, string>> {
+  if (!labelsPromise) {
+    labelsPromise = fetch(LABELS_URL)
+      .then(r => (r.ok ? r.json() : Promise.reject(new Error("labels not found"))))
+      .then((data) => {
+        const result: Record<number, string> = {};
+        for (const k of Object.keys(data)) {
+          const idx = Number(k);
+          if (!Number.isNaN(idx)) result[idx] = String((data as any)[k]);
+        }
+        return result;
+      })
+      .catch(() => ({}));
+  }
+  return labelsPromise;
 }
 
 function softmax(logits: Float32Array): Float32Array {
@@ -73,6 +92,7 @@ async function loadAndPreprocess(imageSrc: string, imgSize: number): Promise<ort
 
 export async function inferSeverity(imageSrc: string): Promise<SeverityPred> {
   const session = await getSession();
+  const idxToClass = await getLabels();
   const inputName = session.inputNames?.[0] ?? "images";
   const outputName = session.outputNames?.[0] ?? "logits";
 
@@ -93,9 +113,17 @@ export async function inferSeverity(imageSrc: string): Promise<SeverityPred> {
   const logits = data instanceof Float32Array ? data : new Float32Array(data);
   const probs = softmax(logits);
 
-  // Expect order [undamaged, damaged]
-  const undamaged = probs[0] ?? 0;
-  const damaged = probs[1] ?? 0;
+  // Resolve indices from labels mapping if available, else fallback
+  let damagedIdx = -1, undamagedIdx = -1;
+  for (const [k, v] of Object.entries(idxToClass)) {
+    if (v === 'damaged') damagedIdx = Number(k);
+    if (v === 'undamaged') undamagedIdx = Number(k);
+  }
+  if (damagedIdx < 0) damagedIdx = 0; // default to [damaged, undamaged]
+  if (undamagedIdx < 0) undamagedIdx = 1;
+
+  const damaged = probs[damagedIdx] ?? 0;
+  const undamaged = probs[undamagedIdx] ?? 0;
   const label: "undamaged" | "damaged" = damaged >= undamaged ? "damaged" : "undamaged";
   const confidence = Math.max(undamaged, damaged);
 
