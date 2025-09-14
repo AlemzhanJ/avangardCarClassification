@@ -263,7 +263,7 @@ export default function Home() {
       if (sev) {
         const damageProb = sev.probabilities?.damaged ?? (sev.label === 'damaged' ? sev.confidence : 1 - sev.confidence);
         let severity: 'Low' | 'Medium' | 'High' = 'Medium';
-        if (damageProb < 0.33) {
+        if (damageProb < 0.1) {
           severity = 'Low';
         } else if (damageProb < 0.66) {
           severity = 'Medium';
