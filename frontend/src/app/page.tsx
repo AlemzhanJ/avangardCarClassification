@@ -68,8 +68,10 @@ const translations = {
     predictedClass: 'Predicted class',
     damageType: 'Damage type',
     classProbabilities: 'Class probabilities',
-    damageScratch: 'Scratch',
-    damageDent: 'Dent'
+    damageScratch: 'Сызат',
+    damageDent: 'Ойық',
+    dirt: 'Лас',
+    dirty: 'Лас'
     ,
     tryAgain: 'Try Again'
   },
