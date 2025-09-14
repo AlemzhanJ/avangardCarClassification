@@ -178,8 +178,6 @@ export default function Home() {
   const [yoloDetections, setYoloDetections] = useState<YoloDet[] | null>(null);
   const [imgNaturalSize, setImgNaturalSize] = useState<{ w: number; h: number } | null>(null);
   const [analysisDone, setAnalysisDone] = useState(false);
-  // Control showing the close cross on image
-  const [showCloseCross, setShowCloseCross] = useState(true);
   const [currentLanguage, setCurrentLanguage] = useState<'En' | 'Ru' | 'Kz'>('En');
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
 
@@ -211,7 +209,7 @@ export default function Home() {
       const reader = new FileReader();
       reader.onload = (e) => {
         setSelectedImage(e.target?.result as string);
-        setShowCloseCross(true);
+        // reset close cross state removed (unused)
         // reset results on new image
         setCleanlinessResult(null);
         setIntegrityResult(null);
@@ -296,7 +294,6 @@ export default function Home() {
 
       // Mark flow complete (UI switches to results-only view)
       setAnalysisDone(true);
-      setShowCloseCross(false);
     } catch (err) {
       console.error('Processing flow failed', err);
     } finally {
