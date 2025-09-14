@@ -265,7 +265,7 @@ export default function Home() {
         let severity: 'Low' | 'Medium' | 'High' = 'Medium';
         if (damageProb < 0.1) {
           severity = 'Low';
-        } else if (damageProb < 0.66) {
+        } else if (damageProb < 0.3) {
           severity = 'Medium';
         } else {
           severity = 'High';
