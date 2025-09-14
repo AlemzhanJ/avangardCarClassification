@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Logo from '../components/Logo';
 import { inferSeverity } from "../lib/severity";
 import { inferCleanliness } from "../lib/cleanliness";
+import { inferYolo, YoloDet } from "../lib/yolo";
 import ShimmerSkeletonOverlay from "../components/ShimmerSkeletonOverlay";
 import { Sparkle, Spinner, Smiley, SmileyMeh, SmileySad, ArrowCounterClockwise } from '@phosphor-icons/react';
 import GaugeRadial from "../components/GaugeRadial";
@@ -174,6 +175,8 @@ export default function Home() {
   // Cleanliness first stage result
   const [cleanlinessResult, setCleanlinessResult] = useState<CleanlinessResult | null>(null);
   const [integrityResult, setIntegrityResult] = useState<ClassificationResult | null>(null);
+  const [yoloDetections, setYoloDetections] = useState<YoloDet[] | null>(null);
+  const [imgNaturalSize, setImgNaturalSize] = useState<{ w: number; h: number } | null>(null);
   const [analysisDone, setAnalysisDone] = useState(false);
   // Control showing the close cross on image
   const [showCloseCross, setShowCloseCross] = useState(true);
@@ -212,6 +215,12 @@ export default function Home() {
         // reset results on new image
         setCleanlinessResult(null);
         setIntegrityResult(null);
+        setYoloDetections(null);
+        // extract natural size for overlay scaling
+        const src = e.target?.result as string;
+        const i = new window.Image();
+        i.onload = () => setImgNaturalSize({ w: i.naturalWidth || i.width, h: i.naturalHeight || i.height });
+        i.src = src;
         setAnalysisDone(false);
       };
       reader.readAsDataURL(file);
@@ -267,6 +276,22 @@ export default function Home() {
         });
       } else {
         setIntegrityResult(null);
+      }
+
+      // YOLO trigger: if either dirt or damage risk >= meh threshold
+      const mehThreshold = 0.33;
+      const dirtRisk = (clean?.label === 'dirty' ? (clean?.confidence ?? 0) : 1 - (clean?.confidence ?? 0));
+      const damageRisk = sev ? (sev.probabilities?.damaged ?? (sev.label === 'damaged' ? sev.confidence : 1 - sev.confidence)) : 0;
+      if ((dirtRisk >= mehThreshold) || (damageRisk >= mehThreshold)) {
+        try {
+          const dets = await inferYolo(selectedImage);
+          setYoloDetections(dets);
+        } catch (e) {
+          console.error('YOLO inference failed', e);
+          setYoloDetections(null);
+        }
+      } else {
+        setYoloDetections(null);
       }
 
       // Mark flow complete (UI switches to results-only view)
@@ -388,10 +413,30 @@ export default function Home() {
                     src={selectedImage}
                     alt="Selected"
                     className="w-full h-auto"
-                    width={1200}
-                    height={800}
+                    width={imgNaturalSize?.w ?? 1200}
+                    height={imgNaturalSize?.h ?? 800}
                     unoptimized
                   />
+                  {/* YOLO detection overlays */}
+                  {yoloDetections && imgNaturalSize && yoloDetections.length > 0 && (
+                    <div className="absolute inset-0 pointer-events-none">
+                      {yoloDetections.map((d, idx) => {
+                        const leftPct = (d.x1 / imgNaturalSize.w) * 100;
+                        const topPct = (d.y1 / imgNaturalSize.h) * 100;
+                        const wPct = ((d.x2 - d.x1) / imgNaturalSize.w) * 100;
+                        const hPct = ((d.y2 - d.y1) / imgNaturalSize.h) * 100;
+                        const label = d.className ?? String(d.classId);
+                        const conf = Math.round(d.confidence * 100);
+                        return (
+                          <div key={idx} style={{ left: `${leftPct}%`, top: `${topPct}%`, width: `${wPct}%`, height: `${hPct}%` }} className="absolute border-2 border-indrive-green box-border">
+                            <div className="absolute -top-6 left-0 bg-indrive-green text-black text-xs font-semibold px-2 py-0.5 rounded">
+                              {label} {conf}%
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                   {/* White skeleton shimmer overlay while processing */}
                   <ShimmerSkeletonOverlay active={isProcessing} durationMs={1400} />
                   {!analysisDone && (
@@ -400,6 +445,7 @@ export default function Home() {
                         e.preventDefault();
                         setSelectedImage(null);
                         setIntegrityResult(null);
+                        setYoloDetections(null);
                       }}
                       className="absolute top-0 right-0 w-8 h-8 bg-indrive-green hover:bg-indrive-green-dark rounded-full flex items-center justify-center shadow-lg transition-colors z-10"
                       title="Remove image"

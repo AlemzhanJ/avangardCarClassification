@@ -44,14 +44,20 @@ async function loadAndPreprocess(imageSrc: string, imgSize: number): Promise<ort
     i.src = imageSrc;
   });
 
+  const iw = img.naturalWidth || img.width;
+  const ih = img.naturalHeight || img.height;
+  const side = Math.min(iw, ih);
+  const sx = Math.floor((iw - side) / 2);
+  const sy = Math.floor((ih - side) / 2);
+
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
   if (!ctx) throw new Error("Canvas 2D context not available");
   canvas.width = imgSize;
   canvas.height = imgSize;
 
-  // Simple resize to square
-  ctx.drawImage(img, 0, 0, imgSize, imgSize);
+  // Center-crop to square then resize to model size
+  ctx.drawImage(img, sx, sy, side, side, 0, 0, imgSize, imgSize);
 
   const { data } = ctx.getImageData(0, 0, imgSize, imgSize);
 

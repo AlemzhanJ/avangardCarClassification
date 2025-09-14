@@ -21,3 +21,6 @@ severity-classifier/
 severity-classifier/**/.onnx filter=lfs diff=lfs merge=lfs -text
 severity-
 [[:space:]][[:space:]]classifier/**/.onnx filter=lfs diff=lfs merge=lfs -text
+
+yolo/*.pt filter=lfs diff=lfs merge=lfs -text
+yolo/*.onnx filter=lfs diff=lfs merge=lfs -text
