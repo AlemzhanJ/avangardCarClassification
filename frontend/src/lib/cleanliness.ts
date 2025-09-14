@@ -46,9 +46,6 @@ async function loadAndPreprocess(imageSrc: string, imgSize: number): Promise<ort
 
   const iw = img.naturalWidth || img.width;
   const ih = img.naturalHeight || img.height;
-  const side = Math.min(iw, ih);
-  const sx = Math.floor((iw - side) / 2);
-  const sy = Math.floor((ih - side) / 2);
 
   const canvas = document.createElement("canvas");
   const ctx = canvas.getContext("2d");
@@ -56,8 +53,8 @@ async function loadAndPreprocess(imageSrc: string, imgSize: number): Promise<ort
   canvas.width = imgSize;
   canvas.height = imgSize;
 
-  // Center-crop to square then resize to model size
-  ctx.drawImage(img, sx, sy, side, side, 0, 0, imgSize, imgSize);
+  // Direct resize (stretch) full image to square imgSize x imgSize
+  ctx.drawImage(img, 0, 0, iw, ih, 0, 0, imgSize, imgSize);
 
   const { data } = ctx.getImageData(0, 0, imgSize, imgSize);
 
