@@ -418,6 +418,13 @@ export default function Home() {
                   {yoloDetections && imgNaturalSize && yoloDetections.length > 0 && (
                     <div className="absolute inset-0 pointer-events-none">
                       {yoloDetections.map((d, idx) => {
+                        let labelTranslated = d.className ?? String(d.classId);
+                        if (d.className === 'dirt' || d.className === 'dirty') labelTranslated = t.dirty;
+                        else if (d.className === 'scratch') labelTranslated = t.damageScratch;
+                        else if (d.className === 'dent') labelTranslated = t.damageDent;
+                        else if (d.className === 'damaged') labelTranslated = t.damaged;
+                        else if (d.className === 'undamaged') labelTranslated = t.undamaged;
+                        
                         const leftPct = (d.x1 / imgNaturalSize.w) * 100;
                         const topPct = (d.y1 / imgNaturalSize.h) * 100;
                         const wPct = ((d.x2 - d.x1) / imgNaturalSize.w) * 100;
@@ -427,7 +434,7 @@ export default function Home() {
                         return (
                           <div key={idx} style={{ left: `${leftPct}%`, top: `${topPct}%`, width: `${wPct}%`, height: `${hPct}%` }} className="absolute border-2 border-indrive-green box-border">
                             <div className="absolute -top-6 left-0 bg-indrive-green text-black text-xs font-semibold px-2 py-0.5 rounded">
-                              {label} {conf}%
+                              {labelTranslated} {conf}%
                             </div>
                           </div>
                         );
