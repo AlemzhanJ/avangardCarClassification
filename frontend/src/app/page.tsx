@@ -7,7 +7,7 @@ import { inferSeverity } from "../lib/severity";
 import { inferCleanliness } from "../lib/cleanliness";
 import { inferYolo, YoloDet } from "../lib/yolo";
 import ShimmerSkeletonOverlay from "../components/ShimmerSkeletonOverlay";
-import { Sparkle, Spinner, Smiley, SmileyMeh, SmileySad, ArrowCounterClockwise } from '@phosphor-icons/react';
+import { Sparkle, Spinner, Smiley, SmileyMeh, SmileySad, ArrowCounterClockwise, Upload } from '@phosphor-icons/react';
 import GaugeRadial from "../components/GaugeRadial";
 
 interface ClassificationResult {
@@ -456,9 +456,7 @@ export default function Home() {
               ) : (
                 <div className="p-8 text-center hover:border-indrive-green transition-colors">
                   <div className="mb-4">
-                    <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
+                    <Upload size={48} weight="bold" className="mx-auto text-gray-400" />
                   </div>
                   <p className="text-lg font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {t.clickToUpload}
